@@ -1,4 +1,4 @@
 .env
 *.log
 __pycache__/
-test_shcemas.py
+test_shcemas.pybackend/test_schemas.py
