@@ -10,7 +10,7 @@ app = FastAPI()
 def root():
     return {"message": "Backend is working!"}
 
-# 🔍 ТЕСТОВЫЙ ЭНДПОИНТ - потом удалишь!
+# ТЕСТОВЫЙ ЭНДПОИНТ - потом удалить!
 @app.get("/test/users", response_model=list[UserResponse])
 def test_users(db: Session = Depends(get_db)):
     """Проверка: возвращает всех пользователей"""

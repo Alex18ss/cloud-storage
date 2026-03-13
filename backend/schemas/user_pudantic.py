@@ -9,8 +9,7 @@ class UserBase(BaseModel):
     is_active: bool = True
 
 
-# ✅ ИСПРАВЛЕНО: UserCreate должен наследоваться от UserBase
-class UserCreate(UserBase):  # ← было BaseModel, стало UserBase
+class UserCreate(UserBase):
     password: str = Field(..., min_length=6)
 
 
