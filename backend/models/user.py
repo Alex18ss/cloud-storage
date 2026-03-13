@@ -14,4 +14,4 @@ class User(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     is_active = Column(Boolean, default=True)
 
-    files = relationship("File", back_populates="owner", cascade="all, delete-orphan")
+    files = relationship("models.file.File", back_populates="owner", cascade="all, delete-orphan")

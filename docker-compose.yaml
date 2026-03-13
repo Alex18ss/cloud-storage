@@ -86,6 +86,8 @@ services:
     networks:
       - cloud-storage-network
 
+
+
 networks:
   cloud-storage-network:  # объявляем сеть
     driver: bridge

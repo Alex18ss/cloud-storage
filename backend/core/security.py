@@ -9,5 +9,5 @@ def verify_password(default_password: str, hashed_password: str) -> bool:
     """
     return pwd_context.verify(default_password, hashed_password)
 
-def get_hashed_password(password: str) -> str:
+def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
