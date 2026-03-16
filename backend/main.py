@@ -1,18 +1,12 @@
-from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
-from core.database import get_db
-from models.user import User
-from schemas.user import UserResponse
+from fastapi import FastAPI
+from schemas.user_pudantic import UserResponse  # теперь файл называется user.py
+from api.auth import router # импортируем роутер из auth.py
 
-app = FastAPI()
+app = FastAPI(title="Cloud Storage API")
+
+app.include_router(router)
+
 
 @app.get("/")
 def root():
     return {"message": "Backend is working!"}
-
-# ТЕСТОВЫЙ ЭНДПОИНТ - потом удалить!
-@app.get("/test/users", response_model=list[UserResponse])
-def test_users(db: Session = Depends(get_db)):
-    """Проверка: возвращает всех пользователей"""
-    users = db.query(User).all()
-    return users

@@ -12,6 +12,11 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str = Field(..., min_length=6)
 
+class UserLogin(BaseModel):
+    """Схема для входа в систему"""
+    email: EmailStr
+    password: str = Field(..., min_length=6)
+
 
 class UserResponse(UserBase):
     id: int
