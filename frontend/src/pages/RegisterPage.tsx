@@ -14,7 +14,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { FiMail, FiLock, FiUser, FiCloud } from "react-icons/fi";
 
 export function RegisterPage() {
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -27,7 +27,7 @@ export function RegisterPage() {
     e.preventDefault();
     setError("");
 
-    if (!name || !email || !password || !confirmPassword) {
+    if (!username || !email || !password || !confirmPassword) {
       setError("Заполните все поля");
       return;
     }
@@ -44,7 +44,7 @@ export function RegisterPage() {
 
     setLoading(true);
     try {
-      await register({ name, email, password });
+      await register({ username, email, password });
       navigate("/");
     } catch (err: unknown) {
       const axiosError = err as { response?: { data?: { detail?: string } } };
@@ -165,13 +165,15 @@ export function RegisterPage() {
               </Box>
               <Input
                 type="text"
-                placeholder="Имя"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                variant="unstyled"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 color="white"
                 _placeholder={{ color: "whiteAlpha.400" }}
                 fontSize="sm"
+                bg='transparent'
+              border='none'
+              _focusVisible={{ outline: 'none' }}
               />
             </Flex>
           </Box>
@@ -200,10 +202,12 @@ export function RegisterPage() {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                variant="unstyled"
                 color="white"
                 _placeholder={{ color: "whiteAlpha.400" }}
                 fontSize="sm"
+                bg='transparent'
+              border='none'
+              _focusVisible={{ outline: 'none' }}
               />
             </Flex>
           </Box>
@@ -232,10 +236,12 @@ export function RegisterPage() {
                 placeholder="Пароль"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                variant="unstyled"
                 color="white"
                 _placeholder={{ color: "whiteAlpha.400" }}
                 fontSize="sm"
+                bg='transparent'
+              border='none'
+              _focusVisible={{ outline: 'none' }}
               />
             </Flex>
           </Box>
@@ -264,10 +270,12 @@ export function RegisterPage() {
                 placeholder="Подтвердите пароль"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                variant="unstyled"
                 color="white"
                 _placeholder={{ color: "whiteAlpha.400" }}
                 fontSize="sm"
+                bg='transparent'
+              border='none'
+              _focusVisible={{ outline: 'none' }}
               />
             </Flex>
           </Box>

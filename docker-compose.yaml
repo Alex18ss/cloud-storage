@@ -39,26 +39,15 @@ services:
       - cloud-storage-network
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
     container_name: cloud-storage-frontend
     restart: always
-    environment:
-      VITE_API_URL: http://localhost:8000  # для React — куда отправлять запросы
-    depends_on:
-      - backend
-    networks:
-      - cloud-storage-network
-    # порты не открываем — nginx будет проксировать
-
-  server-nginx:
-    image: nginx:alpine
-    container_name: cloud-storage-nginx
-    restart: always
     ports:
-      - "8080:80"
-    volumes:
-      - ./frontend/dist:/usr/share/nginx/html:ro  # для продакшен сборки React
-#      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro  # конфиг nginx
+      - "3000:80"
     depends_on:
       - backend
     networks:

@@ -113,7 +113,7 @@ export function DashboardPage() {
 
         <HStack gap={4}>
           <Text color="whiteAlpha.700" fontSize="sm">
-            {user?.name || user?.email}
+            {user?.username || user?.email}
           </Text>
           <Button
             onClick={handleLogout}
@@ -148,7 +148,7 @@ export function DashboardPage() {
               fontWeight="700"
               textAlign="center"
             >
-              Добро пожаловать{user?.name ? `, ${user.name}` : ""}! 👋
+              Добро пожаловать{user?.username ? `, ${user.username}` : ""}! 👋
             </Heading>
             <Text
               color="whiteAlpha.600"

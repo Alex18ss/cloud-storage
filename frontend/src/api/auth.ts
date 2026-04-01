@@ -3,28 +3,36 @@ import api from "./axios";
 export type LoginRequest = {
   email: string;
   password: string;
-}
+};
 
 export type RegisterRequest = {
-  name: string;
+  username: string;
   email: string;
   password: string;
-}
+};
 
-export type AuthResponse = {
-  access_token: string;
-  token_type: string;
-  user: {
-    id: number;
-    name: string;
-    email: string;
-  };
-}
+export type AuthUser = {
+  id: number;
+  username: string;
+  email: string;
+};
+
+export type LoginResponse = {
+  message: string;
+  user_id: number;
+  email: string;
+  username: string;
+};
+
+export type RegisterResponse = AuthUser & {
+  is_active: boolean;
+  created_at: string;
+};
 
 export const authApi = {
   login: (data: LoginRequest) =>
-    api.post<AuthResponse>("/auth/login", data),
+    api.post<LoginResponse>("/auth/login", data),
 
   register: (data: RegisterRequest) =>
-    api.post<AuthResponse>("/auth/register", data),
+    api.post<RegisterResponse>("/auth/register", data),
 };

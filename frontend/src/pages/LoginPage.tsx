@@ -13,7 +13,7 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import { useAuth } from "../contexts/AuthContext";
-import { FiMail, FiLock, FiCloud } from "react-icons/fi";
+import { FiMail, FiLock } from "react-icons/fi";
 import { Logo } from "../components/common/Logo";
 
 export function LoginPage() {

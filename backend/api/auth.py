@@ -40,9 +40,8 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login")
-def login(user_data: UserLogin, db: Session = Depends(get_db)):  # ← исправлено!
-    # Ищем пользователя по email
-    user = db.query(User).filter(User.email == user_data.email).first()  # ← исправлено!
+def login(user_data: UserLogin, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == user_data.email).first()
 
     if not user or not verify_password(user_data.password, user.hashed_password):
         raise HTTPException(
@@ -56,6 +55,7 @@ def login(user_data: UserLogin, db: Session = Depends(get_db)):  # ← испр�
             detail="User account is blocked"
         )
 
+    # Возвращаем то, что ожидает фронтенд
     return {
         "message": "Login successful",
         "user_id": user.id,

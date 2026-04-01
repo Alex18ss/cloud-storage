@@ -11,7 +11,7 @@ import { authApi, type LoginRequest, type RegisterRequest } from "../api/auth";
 
 interface User {
   id: number;
-  name: string;
+  username: string;
   email: string;
 }
 
@@ -44,19 +44,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (data: LoginRequest) => {
     const response = await authApi.login(data);
-    const { access_token, user: userData } = response.data;
-    setToken(access_token);
+    const userData = {
+      id: response.data.user_id,
+      username: response.data.username,
+      email: response.data.email,
+    };
+    const sessionToken = `temp-session-${response.data.user_id}`;
+    setToken(sessionToken);
     setUser(userData);
-    localStorage.setItem("token", access_token);
+    localStorage.setItem("token", sessionToken);
     localStorage.setItem("user", JSON.stringify(userData));
   }, []);
 
   const register = useCallback(async (data: RegisterRequest) => {
     const response = await authApi.register(data);
-    const { access_token, user: userData } = response.data;
-    setToken(access_token);
+    const userData = {
+      id: response.data.id,
+      username: response.data.username,
+      email: response.data.email,
+    };
+    const sessionToken = `temp-session-${response.data.id}`;
+    setToken(sessionToken);
     setUser(userData);
-    localStorage.setItem("token", access_token);
+    localStorage.setItem("token", sessionToken);
     localStorage.setItem("user", JSON.stringify(userData));
   }, []);
 
