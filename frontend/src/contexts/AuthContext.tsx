@@ -1,19 +1,20 @@
 import {
   createContext,
-  useContext,
-  useState,
   useCallback,
+  useContext,
   useEffect,
-  type ReactNode,
   useMemo,
+  useState,
+  type ReactNode,
 } from "react";
-import { authApi, type LoginRequest, type RegisterRequest } from "../api/auth";
+import {
+  authApi,
+  type AuthUser,
+  type LoginRequest,
+  type RegisterRequest,
+} from "../api/auth";
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-}
+interface User extends AuthUser {}
 
 interface AuthContextType {
   user: User | null;
@@ -32,68 +33,83 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const savedToken = localStorage.getItem("token");
-    const savedUser = localStorage.getItem("user");
-    if (savedToken && savedUser) {
-      setToken(savedToken);
-      setUser(JSON.parse(savedUser));
-    }
-    setIsLoading(false);
-  }, []);
-
-  const login = useCallback(async (data: LoginRequest) => {
-    const response = await authApi.login(data);
-    const userData = {
-      id: response.data.user_id,
-      username: response.data.username,
-      email: response.data.email,
-    };
-    const sessionToken = `temp-session-${response.data.user_id}`;
-    setToken(sessionToken);
-    setUser(userData);
-    localStorage.setItem("token", sessionToken);
-    localStorage.setItem("user", JSON.stringify(userData));
-  }, []);
-
-  const register = useCallback(async (data: RegisterRequest) => {
-    const response = await authApi.register(data);
-    const userData = {
-      id: response.data.id,
-      username: response.data.username,
-      email: response.data.email,
-    };
-    const sessionToken = `temp-session-${response.data.id}`;
-    setToken(sessionToken);
-    setUser(userData);
-    localStorage.setItem("token", sessionToken);
-    localStorage.setItem("user", JSON.stringify(userData));
-  }, []);
-
-  const logout = useCallback(() => {
+  const clearSession = useCallback(() => {
     setToken(null);
     setUser(null);
     localStorage.removeItem("token");
     localStorage.removeItem("user");
   }, []);
 
-  const ctx = useMemo(() => ({
-    user,
-    token,
-    isAuthenticated: !!token,
-    isLoading,
-    login,
-    register,
-    logout,
-  }), [user, token, isLoading, login, register, logout])
+  const persistSession = useCallback((nextToken: string, nextUser: User) => {
+    setToken(nextToken);
+    setUser(nextUser);
+    localStorage.setItem("token", nextToken);
+    localStorage.setItem("user", JSON.stringify(nextUser));
+  }, []);
 
-  return (
-    <AuthContext.Provider
-      value={ctx}
-    >
-      {children}
-    </AuthContext.Provider>
+  useEffect(() => {
+    const restoreSession = async () => {
+      const savedToken = localStorage.getItem("token");
+      if (!savedToken) {
+        setIsLoading(false);
+        return;
+      }
+
+      setToken(savedToken);
+
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+
+      try {
+        const response = await authApi.me();
+        setUser(response.data);
+        localStorage.setItem("user", JSON.stringify(response.data));
+      } catch {
+        clearSession();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void restoreSession();
+  }, [clearSession]);
+
+  const login = useCallback(
+    async (data: LoginRequest) => {
+      const response = await authApi.login(data);
+      persistSession(response.data.access_token, response.data.user);
+    },
+    [persistSession]
   );
+
+  const register = useCallback(
+    async (data: RegisterRequest) => {
+      const response = await authApi.register(data);
+      persistSession(response.data.access_token, response.data.user);
+    },
+    [persistSession]
+  );
+
+  const logout = useCallback(() => {
+    clearSession();
+  }, [clearSession]);
+
+  const ctx = useMemo(
+    () => ({
+      user,
+      token,
+      isAuthenticated: !!token,
+      isLoading,
+      login,
+      register,
+      logout,
+    }),
+    [user, token, isLoading, login, register, logout]
+  );
+
+  return <AuthContext.Provider value={ctx}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

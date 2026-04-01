@@ -17,22 +17,17 @@ export type AuthUser = {
   email: string;
 };
 
-export type LoginResponse = {
-  message: string;
-  user_id: number;
-  email: string;
-  username: string;
+export type AuthResponse = {
+  access_token: string;
+  token_type: string;
+  user: AuthUser;
 };
 
-export type RegisterResponse = AuthUser & {
-  is_active: boolean;
-  created_at: string;
-};
+export type RegisterResponse = AuthResponse;
 
 export const authApi = {
-  login: (data: LoginRequest) =>
-    api.post<LoginResponse>("/auth/login", data),
-
+  login: (data: LoginRequest) => api.post<AuthResponse>("/auth/login", data),
   register: (data: RegisterRequest) =>
     api.post<RegisterResponse>("/auth/register", data),
+  me: () => api.get<AuthUser>("/auth/me"),
 };

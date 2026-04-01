@@ -1,18 +1,28 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import or_
+from sqlalchemy.orm import Session
 
-from core.database import get_db  # импортируем функцию
-from core.security import get_password_hash, verify_password
+from core.database import get_db
+from core.security import (
+    authenticate_user,
+    create_access_token,
+    get_current_active_user,
+    get_password_hash,
+)
 from models.user import User
-from schemas.user_pudantic import UserCreate, UserResponse, UserLogin
+from schemas.user_pudantic import AuthResponse, Token, UserCreate, UserLogin, UserResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def build_auth_response(user: User) -> AuthResponse:
+    access_token = create_access_token({"sub": str(user.id), "email": user.email})
+    return AuthResponse(access_token=access_token, token_type="bearer", user=user)
+
+
+@router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
-    # Проверяем, существует ли пользователь
     existing_user = db.query(User).filter(
         or_(User.email == user_data.email, User.username == user_data.username)
     ).first()
@@ -20,51 +30,67 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User with this email or username already exists"
+            detail="User with this email or username already exists",
         )
 
-    # Создаем нового пользователя
-    hashed_password = get_password_hash(user_data.password)
     new_user = User(
         email=user_data.email,
         username=user_data.username,
-        hashed_password=hashed_password,
-        is_active=True
+        hashed_password=get_password_hash(user_data.password),
+        is_active=True,
     )
 
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
 
-    return new_user
+    return build_auth_response(new_user)
 
 
-@router.post("/login")
+@router.post("/login", response_model=AuthResponse)
 def login(user_data: UserLogin, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == user_data.email).first()
+    user = authenticate_user(db, user_data.email, user_data.password)
 
-    if not user or not verify_password(user_data.password, user.hashed_password):
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password"
+            detail="Invalid email or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is blocked"
+            detail="User account is blocked",
         )
 
-    # Возвращаем то, что ожидает фронтенд
-    return {
-        "message": "Login successful",
-        "user_id": user.id,
-        "email": user.email,
-        "username": user.username
-    }
+    return build_auth_response(user)
 
 
-# @router.get("/me", response_model=UserResponse)
-# def get_current_user(db: Session = Depends(get_db)):
-#     # Временно пусто (пока нет JWT)
-#     pass
+@router.post("/token", response_model=Token)
+def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+):
+    user = authenticate_user(db, form_data.username, form_data.password)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User account is blocked",
+        )
+
+    access_token = create_access_token({"sub": str(user.id), "email": user.email})
+    return Token(access_token=access_token, token_type="bearer")
+
+
+@router.get("/me", response_model=UserResponse)
+def get_me(current_user: User = Depends(get_current_active_user)):
+    return current_user
