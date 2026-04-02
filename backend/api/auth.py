@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, Form, HTTPException, status
-from sqlalchemy import or_
+from fastapi import APIRouter, Depends, HTTPException, status, Form
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from core.database import get_db
 from core.security import (
@@ -8,9 +8,16 @@ from core.security import (
     create_access_token,
     get_current_active_user,
     get_password_hash,
+    verify_password,  # ← добавил
 )
 from models.user import User
-from schemas.user_pudantic import AuthResponse, Token, UserCreate, UserLogin, UserResponse
+from schemas.user_pudantic import (
+    AuthResponse,
+    Token,
+    UserCreate,
+    UserLogin,
+    UserResponse,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -66,6 +73,7 @@ def login(user_data: UserLogin, db: Session = Depends(get_db)):
     return build_auth_response(user)
 
 
+
 @router.post("/token", response_model=Token)
 def login_for_access_token(
     username: str = Form(...),
@@ -94,3 +102,29 @@ def login_for_access_token(
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_active_user)):
     return current_user
+
+
+@router.put("/change-password")
+def change_password(
+    current_password: str,
+    new_password: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    # Проверяем текущий пароль (исправлено!)
+    if not verify_password(current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect"
+        )
+
+    if len(new_password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be at least 6 characters"
+        )
+
+    current_user.hashed_password = get_password_hash(new_password)
+    db.commit()
+
+    return {"message": "Password changed successfully"}
