@@ -22,27 +22,35 @@
 | **ORM** | SQLAlchemy |
 
 ### 📁 Структура проекта
+```
 cloud-storage/
-├── api/ # Эндпоинты API
-│ ├── auth.py # Регистрация, логин, профиль
-│ └── file_downloader.py # Загрузка, скачивание файлов
-├── core/ # Ядро приложения
-│ ├── config.py # Настройки из .env
-│ ├── database.py # Подключение к БД
-│ └── security.py # JWT, хеширование паролей
-├── models/ # SQLAlchemy модели
-│ ├── user.py # Пользователи
-│ └── file.py # Файлы
-├── schemas/ # Pydantic схемы
-│ ├── user_pydantic.py # Валидация пользователей
-│ └── file_pydantic.py # Валидация файлов
-├── services/ # Бизнес-логика
-│ └── s3_service.py # Интеграция с MinIO
-├── requirements.txt # Python зависимости
-├── Dockerfile # Сборка образа
-├── docker-compose.yml # Оркестрация сервисов
-└── .env # Переменные окружения
-
+├── api/
+│   ├── __init__.py
+│   ├── auth.py
+│   └── file_downloader.py
+├── core/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── database.py
+│   └── security.py
+├── models/
+│   ├── __init__.py
+│   ├── user.py
+│   └── file.py
+├── schemas/
+│   ├── __init__.py
+│   ├── user_pydantic.py
+│   └── file_pydantic.py
+├── services/
+│   ├── __init__.py
+│   └── s3_service.py
+├── .env
+├── .gitignore
+├── docker-compose.yml
+├── Dockerfile
+├── requirements.txt
+└── README.md
+```
 
 
 ## 🚀 Быстрый старт
@@ -56,19 +64,24 @@ cd cloud-storage
 ### 2. Настройка окружения
 Создай файл .env:
 # PostgreSQL
+```
 POSTGRES_DB=cloudstorage
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=your_password
+```
 
 # MinIO
+```
 MINIO_ROOT_USER=minio-admin
 MINIO_ROOT_PASSWORD=your_minio_password
 MINIO_ENDPOINT=minio:9000
 MINIO_BUCKET=cloud-storage
+```
 
 # JWT
+```
 SECRET_KEY=your_super_secret_key
-
+```
 ### 3. ЗАпуск через докер
 ```bash
 docker compose up -d --build
@@ -82,13 +95,17 @@ MinIO Console: http://localhost:9001 (логин: minio-admin)
 Health check: http://localhost:8000/health
 
 📚 API Эндпоинты
+
 🔐 Аутентификация
+```
 Метод	Эндпоинт	Описание
 POST	/auth/register	Регистрация нового пользователя
 POST	/auth/login	Вход в систему (возвращает JWT токен)
 GET	/auth/me	Получить информацию о текущем пользователе
 PUT	/auth/change-password	Смена пароля
+```
 📁 Файлы
+```
 Метод	Эндпоинт	Описание
 POST	/files/upload	Загрузить файл (требует JWT)
 GET	/files/	Получить список всех файлов
@@ -96,3 +113,4 @@ GET	/files/user/{user_id}	Получить файлы пользователя
 GET	/files/{file_id}	Информация о файле
 GET	/files/download/{file_id}	Скачать файл
 DELETE	/files/{file_id}	Удалить файл
+```
