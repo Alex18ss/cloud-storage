@@ -8,7 +8,7 @@ from core.security import (
     create_access_token,
     get_current_active_user,
     get_password_hash,
-    verify_password,  # ← добавил
+    verify_password,
 )
 from models.user import User
 from schemas.user_pudantic import (
